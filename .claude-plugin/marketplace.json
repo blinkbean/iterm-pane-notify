@@ -1,0 +1,8 @@
+{
+  "name": "iterm-pane-notify",
+  "owner": { "name": "suhang" },
+  "metadata": {
+    "description": "iTerm2 pane 提醒色插件：Claude 跑完/等待时染色当前分屏，发下条指令自动还原。"
+  },
+  "plugins": [{ "name": "iterm-pane-notify", "source": "./" }]
+}

@@ -1,0 +1,7 @@
+{
+  "name": "iterm-pane-notify",
+  "version": "0.1.0",
+  "description": "Claude 任务跑完或等待授权时，把当前 iTerm2 pane 染成提醒色（背景+文字同步），你发下条指令时自动还原。多开分屏互不干扰。",
+  "author": { "name": "suhang" },
+  "license": "MIT"
+}
