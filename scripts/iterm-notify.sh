@@ -12,6 +12,11 @@ sid="${ITERM_SESSION_ID##*:}"
 [ -n "$sid" ] || exit 0
 
 state="/tmp/claude-iterm-bg-${sid}"
+# Last-known TRUE original bg+fg, shared across panes. Lets a pane that was
+# split (Ctrl+D) out of an attention-colored parent — and so was born showing
+# the attention color with no state of its own — fall back to a real original
+# instead of getting stuck in the attention color.
+default_file="/tmp/claude-iterm-bg-default"
 
 # Candidates, RGB each 0-65535 (= hex channel * 257). Tip: trust iTerm2's look,
 # not a browser swatch — run `iterm-notify.sh preview` to compare them in-pane.
@@ -59,9 +64,11 @@ case "$action" in
     if [ ! -f "$state" ]; then
       cur=$(read_colors)
       curbg="${cur%%|*}"
-      # Guard: don't save the attention bg as "original" (prior crash / no reset).
+      # Guard: don't save the attention bg as "original" (prior crash / no reset,
+      # or a pane split out of an already-colored parent).
       if [ -n "$curbg" ] && [ "$(echo "$curbg" | tr -d ' ')" != "$(echo "$ATTENTION_BG" | tr -d ' ')" ]; then
         printf '%s' "$cur" > "$state"
+        printf '%s' "$cur" > "$default_file"   # remember the TRUE original for split-born panes
       fi
     fi
     find_and "set background color of s to {${ATTENTION_BG}}"
@@ -74,6 +81,18 @@ case "$action" in
       [ -n "$bg" ] && find_and "set background color of s to {${bg}}"
       [ -n "$fg" ] && [ "$fg" != "$bg" ] && find_and "set foreground color of s to {${fg}}"
       rm -f "$state"
+    elif [ -f "$default_file" ]; then
+      # No state of our own. If this pane is currently showing the attention
+      # color, it was almost certainly split (Ctrl+D) out of a colored parent
+      # and is stuck there — restore it from the shared true-original default.
+      cur=$(read_colors)
+      curbg="${cur%%|*}"
+      if [ -n "$curbg" ] && [ "$(echo "$curbg" | tr -d ' ')" = "$(echo "$ATTENTION_BG" | tr -d ' ')" ]; then
+        saved=$(cat "$default_file")
+        bg="${saved%%|*}"; fg="${saved##*|}"
+        [ -n "$bg" ] && find_and "set background color of s to {${bg}}"
+        [ -n "$fg" ] && [ "$fg" != "$bg" ] && find_and "set foreground color of s to {${fg}}"
+      fi
     fi
     ;;
   preview)
