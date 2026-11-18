@@ -46,6 +46,21 @@ claude plugin install iterm-pane-notify --marketplace iterm-pane-notify
 
 > 提示：浏览器色卡和 iTerm2 实际渲染有色差，**以 iTerm2 里的观感为准**。多开分屏时若提醒色发灰，多半是 iTerm2 的 “Dim inactive split panes” 把非活动 pane 压暗了（Settings → Appearance → Dimming 可关）。
 
+## 让分屏子 pane 出生就是干净的（可选，需手动改 iTerm2 设置）
+
+iTerm2 的 `⌘D` 默认是 **“Split … with Current Profile”**，它会把当前 pane 的**运行时状态整份拷给子 pane**——包括本插件用 AppleScript 改上去的提醒色。所以当你在一个正被染色的 pane 上 `⌘D`，切出的子 pane 一出生就带着那层提醒色（之后你发第一条指令时本插件会还原，但出生那一下仍有残留）。
+
+想让子 pane **出生就回到 profile 存储的干净底色**，把 `⌘D` 改绑成明确指定 **Default** profile（区别就在 “Current”＝拷运行时 vs 指定 “Default”＝读存储值）：
+
+1. `⌘,` → **Keys** → **Key Bindings**
+2. 选中 `⌘D`（或点 `+` 新建、快捷键录 `⌘D`）
+3. Action 选 **“Split Vertically with Profile”**，右侧 profile 选 **Default**
+4. 存盘即生效，无需重启。水平分屏 `⌘⇧D` 想一样处理就再配一条
+
+> 为什么不能用脚本自动改：键位绑定存在 `com.googlecode.iterm2.plist`，而 iTerm2 会在**退出时用内存配置覆盖该文件**，`defaults write` 只有在 iTerm2 完全退出时写才生效——从正跑在 iTerm2 里的会话中改不现实，所以这步请手动点。
+
+> 取舍：这么绑之后**所有** `⌘D` 分屏都强制用 Default profile。如果你会在别的 profile 下工作、且希望分屏保持那个 profile，就别绑这条，改靠本插件的还原逻辑兜底。
+
 ## 它改了什么 / 没改什么
 
 - 只改触发那一刻的 pane 背景+前景色，还原时恢复成你**原来**的颜色（首次变色时存下）。
