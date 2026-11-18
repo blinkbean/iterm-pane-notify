@@ -19,17 +19,30 @@
 
 按提示 `y` 添加 marketplace，再选安装范围即可。多设备同步：每台机器装一次，配色跟着仓库走。
 
+## 在自己 pane 里实测对比各候选
+
+`/plugin install` 装好后，脚本在插件缓存目录里（路径带版本号）。用下面这条命令定位并直接跑 `preview`，不用关心具体路径：
+
+```
+"$(find ~/.claude/plugins/cache -path '*iterm-pane-notify*/scripts/iterm-notify.sh' | head -1)" preview
+```
+
+会在当前 pane 里把 8 个候选轮播一遍（每个停 2.2 秒并打出名字），看完自动还原。请在你**自己的 iTerm2 pane** 里跑（轮播约 18 秒，要亲眼看）。
+
 ## 换提醒色
 
-脚本 `scripts/iterm-notify.sh` 顶部的 `CANDIDATES` 数组里列了 8 个候选（含各自的 0–65535 值）。想换色，把某个候选的值填进 `ATTENTION_BG` 那行即可。当前默认是**深青 `#00695C`**，文字固定纯白高对比。
+颜色写在 `scripts/iterm-notify.sh` 顶部：`CANDIDATES` 数组列了 8 个候选（含各自 0–65535 值），`ATTENTION_BG` 那行是当前启用的。默认**深青 `#00695C`**，文字固定纯白高对比。
 
-想在自己 pane 里实测对比各候选：
+> ⚠️ 不要改缓存目录（`~/.claude/plugins/cache/...`）里的脚本——`claude plugin update` 一更新就会覆盖。要持久改色，改**你自己的源码仓库**再重装：
 
 ```
-./scripts/iterm-notify.sh preview
+git clone https://github.com/blinkbean/iterm-pane-notify.git
+# 编辑 iterm-pane-notify/scripts/iterm-notify.sh 里的 ATTENTION_BG=
+claude plugin marketplace add ./iterm-pane-notify      # 把本地文件夹当 marketplace
+claude plugin install iterm-pane-notify --marketplace iterm-pane-notify
 ```
 
-会在当前 pane 里把 8 个候选轮播一遍（每个停 2.2 秒并打出名字），看完自动还原。
+本地文件夹源的插件直接从该文件夹读取，之后改脚本 + `/reload-plugins` 即生效，无需重装。
 
 > 提示：浏览器色卡和 iTerm2 实际渲染有色差，**以 iTerm2 里的观感为准**。多开分屏时若提醒色发灰，多半是 iTerm2 的 “Dim inactive split panes” 把非活动 pane 压暗了（Settings → Appearance → Dimming 可关）。
 
